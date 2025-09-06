@@ -4,9 +4,11 @@ import com.ecogrid.mapper.model.Grafo;
 import com.ecogrid.mapper.model.LinhaDeTransmissao;
 import com.ecogrid.mapper.model.Subestacao;
 import lombok.RequiredArgsConstructor;
+import org.locationtech.jts.geom.Point;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -84,6 +86,51 @@ public class GrafoService {
                 .flatMap(List::stream)
                 .distinct()
                 .count();
+    }
+
+    public List<Subestacao> getTodasSubestacoes(){
+        if(grafo.getAdjacencias().isEmpty()){
+            return Collections.emptyList();
+        }
+        return new ArrayList<>(grafo.getAdjacencias().keySet());
+    }
+
+    public List<LinhaDeTransmissao> getLinhasDaSubestacao(Subestacao subestacao){
+        if(grafo.getAdjacencias().isEmpty()){
+            return Collections.emptyList();
+        }
+        return new ArrayList<>(grafo.getAdjacencias().get(subestacao));
+    }
+
+    public Subestacao getVizinho(Subestacao subestacao, LinhaDeTransmissao linha){
+        if(linha == null || subestacao == null){
+            return null;
+        }
+
+        if(subestacao.equals(linha.getSubestacaoA())){
+            return linha.getSubestacaoB();
+        } else if(subestacao.equals(linha.getSubestacaoB())) {
+            return linha.getSubestacaoA();
+        }
+
+        return null;
+    }
+
+    public double calcularDistancia(Point a, Point b) {
+        if (a == null || b == null) {
+            return Double.MAX_VALUE;
+        }
+
+        double lon1 = a.getX();
+        double lat1 = a.getY();
+        double lon2 = b.getX();
+        double lat2 = b.getY();
+
+        double deltaLonKm = (lon2 - lon1) * 111.32 * Math.cos(Math.toRadians((lat1 + lat2) / 2));
+        double deltaLatKm = (lat2 - lat1) * 111.32;
+
+        return Math.sqrt(deltaLonKm * deltaLonKm + deltaLatKm * deltaLatKm);
+
     }
 
 }
