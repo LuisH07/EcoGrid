@@ -11,30 +11,32 @@ public class LinhaDeTransmissao {
     private static final AtomicLong COUNTER = new AtomicLong(0);
     private final long id;
 
-    private final Subestacao subestacaoA;
-    private final Subestacao subestacaoB;
+    @Setter
+    private Subestacao subestacaoA;
+    @Setter
+    private Subestacao subestacaoB;
 
-    private final CaracteristicasOperacionais caracteristicasOperacionais;
     private final InformacoesAdministrativas informacoesAdministrativas;
 
     private final double comprimentoKm;
+    private final double tensaoKv;
 
     @Setter
-    private boolean interceptaAreaProtegida = false;
+    private boolean sensivel = false;
 
     @Builder
     private LinhaDeTransmissao(
             Subestacao subestacaoA,
             Subestacao subestacaoB,
-            CaracteristicasOperacionais caracteristicasOperacionais,
-            InformacoesAdministrativas infos,
-            double comprimentoKm
+            InformacoesAdministrativas informacoesAdministrativas,
+            double comprimentoKm,
+            double tensaoKv
     ) {
         this.id = COUNTER.incrementAndGet();
         this.subestacaoA = subestacaoA;
         this.subestacaoB = subestacaoB;
-        this.caracteristicasOperacionais = caracteristicasOperacionais;
-        this.informacoesAdministrativas = infos;
+        this.informacoesAdministrativas = informacoesAdministrativas;
         this.comprimentoKm = comprimentoKm;
+        this.tensaoKv = tensaoKv;
     }
 }

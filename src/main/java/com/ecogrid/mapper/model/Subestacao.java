@@ -1,6 +1,6 @@
 package com.ecogrid.mapper.model;
 
-import com.ecogrid.mapper.model.enums.UnidadeFederativa;
+import com.ecogrid.mapper.model.enums.UnidadesFederativasNordeste;
 import lombok.*;
 import org.locationtech.jts.geom.Point;
 import java.time.LocalDate;
@@ -15,7 +15,7 @@ public class Subestacao {
 
     private final String idInstalacao;
     private final String nome;
-    private final UnidadeFederativa unidadeFederativa;
+    private final UnidadesFederativasNordeste unidadeFederativaNordeste;
     private final String idAgentePrincipal;
     private final String agentePrincipal;
     private final LocalDate dataPrevista;
@@ -24,12 +24,12 @@ public class Subestacao {
 
     @Builder
     private Subestacao(String idInstalacao, String nome,
-                       UnidadeFederativa unidadeFederativa, String idAgentePrincipal,
-                      String agentePrincipal, LocalDate dataPrevista, LocalDate dataEntrada, Point coordenadas) {
+                       UnidadesFederativasNordeste unidadeFederativaNordeste, String idAgentePrincipal,
+                       String agentePrincipal, LocalDate dataPrevista, LocalDate dataEntrada, Point coordenadas) {
         this.id = COUNTER.incrementAndGet();
         this.idInstalacao = idInstalacao;
         this.nome = nome;
-        this.unidadeFederativa = unidadeFederativa;
+        this.unidadeFederativaNordeste = unidadeFederativaNordeste;
         this.idAgentePrincipal = idAgentePrincipal;
         this.agentePrincipal = agentePrincipal;
         this.dataPrevista = dataPrevista;

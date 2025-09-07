@@ -14,7 +14,6 @@ public class InformacoesAdministrativas {
     private final String tipoRede;
     private final String agenteProprietario;
     private final String numeroOutorga;
-    private final String tipoCaboPararraio;
     private final LocalDate dataEntrada;
     private final LocalDate dataPrevista;
 }
