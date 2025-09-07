@@ -18,7 +18,8 @@ public class LinhaDeTransmissao {
 
     private final InformacoesAdministrativas informacoesAdministrativas;
 
-    private final double comprimentoKm;
+    @Setter
+    private double comprimentoKm;
     private final double tensaoKv;
 
     @Setter
