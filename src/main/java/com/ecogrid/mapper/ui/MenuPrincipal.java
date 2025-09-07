@@ -24,9 +24,9 @@ public class MenuPrincipal {
             int opcao = lerOpcao();
 
             switch (opcao) {
-                case 1 -> imprimirSubestacoes(grafoFacade.getAllSubestacoes());
-                case 2 -> imprimirLinhasDeTransmissao(grafoFacade.getAllLinhasDeTranmissao());
-//                case 3 -> encontrarRota();
+                case 1 -> imprimirSubestacoes(grafoFacade.findAllSubestacoes());
+                case 2 -> imprimirLinhasDeTransmissao(grafoFacade.findAllLinhasDeTranmissao());
+                case 3 -> imprimirRotaSegura();
 //                case 4 -> grafoFacade.analisarKConectividade();
 //                case 5 -> grafoFacade.analisarCentralidade();
                 case 0 -> {
@@ -43,7 +43,7 @@ public class MenuPrincipal {
                 .append("\nMENU PRINCIPAL\n\n")
                 .append("1 - Listar subestações\n")
                 .append("2 - Listar linhas de transmissão\n")
-//                .append("3 - Encontrar rota segura entre subestações\n");
+                .append("3 - Encontrar rota segura entre subestações\n")
 //                .append("4 - Analisar k-conectividade e pontos críticos\n");
 //                .append("5 - Analisar centralidade da rede\n");
                 .append("0 - Sair\n\n")
@@ -107,32 +107,32 @@ public class MenuPrincipal {
         }
     }
 
-    private void encontrarRota() {
+    private void imprimirRotaSegura() {
         System.out.print("Digite o nome da subestação de origem: ");
         String nomeOrigem = scanner.nextLine().trim();
 
         System.out.print("Digite o nome da subestação de destino: ");
         String nomeDestino = scanner.nextLine().trim();
 
-        Subestacao origem = grafoFacade.buscarSubestacaoPorNome(nomeOrigem);
-        Subestacao destino = grafoFacade.buscarSubestacaoPorNome(nomeDestino);
+        Subestacao origem = grafoFacade.findSubestacaoByNome(nomeOrigem);
+        Subestacao destino = grafoFacade.findSubestacaoByNome(nomeDestino);
 
         if (origem == null || destino == null) {
             System.out.println("Origem ou destino não encontrados!");
             return;
         }
 
-        List<Subestacao> caminho = grafoFacade.encontrarCaminhoSeguro(origem, destino);
+        List<Subestacao> rotaSegura = grafoFacade.encontrarRotaSegura(origem, destino);
 
-        if (caminho.isEmpty()) {
+        if (rotaSegura.isEmpty()) {
             System.out.println("Não existe rota segura entre as subestações.");
-        } else {
-            System.out.println("Rota encontrada:");
-            for (int i = 0; i < caminho.size(); i++) {
-                Subestacao sub = caminho.get(i);
-                System.out.printf("%d. %s (%s)%n", i + 1, sub.getNome(), sub.getUnidadeFederativaNordeste());
-            }
+            return;
+        }
+
+        System.out.println("Rota encontrada:\n");
+        for (Subestacao sub : rotaSegura) {
+            System.out.println(sub.getNome());
         }
     }
-
+    //MILAGRES II, QUEIMADA NOVA 2
 }

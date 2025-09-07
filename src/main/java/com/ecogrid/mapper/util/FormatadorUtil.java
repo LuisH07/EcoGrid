@@ -22,9 +22,9 @@ public class FormatadorUtil {
 
     public static String formatarComprimentoToString(double comprimentoKm) {
         if (comprimentoKm == 0.0) {
-            return "< 1 km";
+            return "< 1.0 km";
         }
-        return String.format("%.2f km", comprimentoKm);
+        return String.format("%.1f km", comprimentoKm);
     }
 
     public static UnidadesFederativasNordeste normalizarUnidadeFederativaSubestacao(String nomeSubestacao) {
