@@ -284,12 +284,106 @@ public class GrafoService {
         }
     }
 
-    public Map<Subestacao, Integer> calcularCentralidade() {
-        Map<Subestacao, Integer> centralidade = new HashMap<>();
-        for (Map.Entry<Subestacao, List<LinhaDeTransmissao>> entry : grafo.entrySet()) {
-            centralidade.put(entry.getKey(), entry.getValue().size());
+    public Set<Subestacao> findSubestacoesCriticas() {
+        Set<Subestacao> nosCriticos = new HashSet<>();
+        Map<Subestacao, Boolean> visitados = new HashMap<>();
+        Map<Subestacao, Integer> discovery = new HashMap<>();
+        Map<Subestacao, Integer> low = new HashMap<>();
+        Map<Subestacao, Subestacao> pais = new HashMap<>();
+        int tempo = 0;
+
+        for (Subestacao sub : grafo.keySet()) {
+            visitados.put(sub, false);
+            pais.put(sub, null);
         }
-        return centralidade;
+
+        for (Subestacao sub : grafo.keySet()) {
+            if (!visitados.get(sub)) {
+                dfsSubestacoesCriticas(sub, visitados, discovery, low, pais, nosCriticos, tempo);
+            }
+        }
+
+        return nosCriticos;
+
+    }
+
+    private void dfsSubestacoesCriticas(Subestacao u, Map<Subestacao, Boolean> visitados,
+                                Map<Subestacao, Integer> discovery, Map<Subestacao, Integer> low,
+                                Map<Subestacao, Subestacao> pais, Set<Subestacao> articulationPoints,
+                                int tempo) {
+        visitados.put(u, true);
+        discovery.put(u, tempo);
+        low.put(u, tempo);
+        int filhos = 0;
+        tempo++;
+
+        for (LinhaDeTransmissao linha : grafo.getOrDefault(u, Collections.emptyList())) {
+            Subestacao v = findVizinho(u, linha);
+            if (!visitados.get(v)) {
+                filhos++;
+                pais.put(v, u);
+                dfsSubestacoesCriticas(v, visitados, discovery, low, pais, articulationPoints, tempo);
+
+                low.put(u, Math.min(low.get(u), low.get(v)));
+
+                if (pais.get(u) == null && filhos > 1) {
+                    articulationPoints.add(u); // raiz com mais de um filho
+                }
+                if (pais.get(u) != null && low.get(v) >= discovery.get(u)) {
+                    articulationPoints.add(u);
+                }
+            } else if (!v.equals(pais.get(u))) {
+                low.put(u, Math.min(low.get(u), discovery.get(v)));
+            }
+        }
+    }
+
+    public List<LinhaDeTransmissao> findLinhasDeTransmissaoCriticas() {
+        List<LinhaDeTransmissao> arestasCriticas = new ArrayList<>();
+        Map<Subestacao, Boolean> visitados = new HashMap<>();
+        Map<Subestacao, Integer> discovery = new HashMap<>();
+        Map<Subestacao, Integer> low = new HashMap<>();
+        Map<Subestacao, Subestacao> pais = new HashMap<>();
+        int tempo = 0;
+
+        for (Subestacao sub : grafo.keySet()) {
+            visitados.put(sub, false);
+            pais.put(sub, null);
+        }
+
+        for (Subestacao sub : grafo.keySet()) {
+            if (!visitados.get(sub)) {
+                dfsArestasCriticas(sub, visitados, discovery, low, pais, arestasCriticas, tempo);
+            }
+        }
+
+        return arestasCriticas;
+    }
+
+    private void dfsArestasCriticas(Subestacao u, Map<Subestacao, Boolean> visitados,
+                                    Map<Subestacao, Integer> discovery, Map<Subestacao, Integer> low,
+                                    Map<Subestacao, Subestacao> pais, List<LinhaDeTransmissao> bridges,
+                                    int tempo) {
+        visitados.put(u, true);
+        discovery.put(u, tempo);
+        low.put(u, tempo);
+        tempo++;
+
+        for (LinhaDeTransmissao linha : grafo.getOrDefault(u, Collections.emptyList())) {
+            Subestacao v = findVizinho(u, linha);
+            if (!visitados.get(v)) {
+                pais.put(v, u);
+                dfsArestasCriticas(v, visitados, discovery, low, pais, bridges, tempo);
+
+                low.put(u, Math.min(low.get(u), low.get(v)));
+
+                if (low.get(v) > discovery.get(u)) {
+                    bridges.add(linha);
+                }
+            } else if (!v.equals(pais.get(u))) {
+                low.put(u, Math.min(low.get(u), discovery.get(v)));
+            }
+        }
     }
 
 }

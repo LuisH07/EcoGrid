@@ -1,7 +1,5 @@
 package com.ecogrid.mapper.controller;
 
-import com.ecogrid.mapper.dto.request.RotaSeguraRequest;
-import com.ecogrid.mapper.dto.request.SubestacaoRequest;
 import com.ecogrid.mapper.dto.response.AreaProtegidaResponse;
 import com.ecogrid.mapper.dto.response.LinhaDeTransmissaoResponse;
 import com.ecogrid.mapper.dto.response.SubestacaoResponse;
@@ -9,6 +7,8 @@ import com.ecogrid.mapper.facade.GrafoFacade;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1/")
@@ -46,13 +46,32 @@ public class GrafoController {
     }
 
     @GetMapping("rotaSegura")
-    public List<SubestacaoResponse> getRotaSegura(
+    public List<List<SubestacaoResponse>> getRotaSegura(
             @RequestParam("nomeSubOrigem") String nomeSubOrigem,
             @RequestParam("nomeSubDestino") String nomeSubDestino) {
 
         return grafoFacade.findRotaSegura(nomeSubOrigem, nomeSubDestino)
                 .stream()
-                .map(SubestacaoResponse::new)
+                .map(rota -> rota.stream()
+                        .map(SubestacaoResponse::new)
+                        .toList())
                 .toList();
     }
+
+    @GetMapping("subestacoes/criticas")
+    public Set<SubestacaoResponse> getSubestacoesCriticas() {
+        return grafoFacade.findSubestacoesCriticas()
+                .stream()
+                .map(SubestacaoResponse::new)
+                .collect(Collectors.toSet());
+    }
+
+    @GetMapping("linhasDeTransmissao/criticas")
+    public List<LinhaDeTransmissaoResponse> getLinhasDeTransmissaoCriticas() {
+        return grafoFacade.findLinhasDeTransmissaoCriticas()
+                .stream()
+                .map(LinhaDeTransmissaoResponse::new)
+                .toList();
+    }
+
 }

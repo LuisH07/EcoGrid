@@ -9,7 +9,7 @@ import com.ecogrid.mapper.service.*;
 import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 
 @Service
 public class GrafoFacade {
@@ -140,17 +140,19 @@ public class GrafoFacade {
         grafoService.deleteLinhaDeTransmissao(linhaDeTransmissao);
     }
 
-    public List<Subestacao> findRotaSegura(String nomeSubOrigem, String nomeSubDestino) {
+    public List<List<Subestacao>> findRotaSegura(String nomeSubOrigem, String nomeSubDestino) {
         Subestacao subOrigem = findSubestacaoByNome(nomeSubOrigem);
         Subestacao subDestino = findSubestacaoByNome(nomeSubDestino);
 
-        List<Subestacao> rota = grafoService.algoritmoAStar(subOrigem, subDestino);
+        List<Subestacao> rotaOriginal = grafoService.algoritmoAStar(subOrigem, subDestino);
 
-        if (rota.size() < 3) {
-            return rota;
+        if (rotaOriginal.size() < 3) {
+            List<List<Subestacao>> resultado = new ArrayList<>();
+            resultado.add(rotaOriginal);
+            return resultado;
         }
 
-        List<Subestacao> rotaMelhorada = new ArrayList<>(rota);
+        List<Subestacao> rotaMelhorada = new ArrayList<>(rotaOriginal);
         boolean flagMelhoria;
         int contador = 0;
 
@@ -179,10 +181,18 @@ public class GrafoFacade {
             contador++;
         } while (flagMelhoria && contador < 50);
 
-        return rotaMelhorada;
+        List<List<Subestacao>> resultado = new ArrayList<>();
+        resultado.add(rotaOriginal);
+        resultado.add(rotaMelhorada);
+
+        return resultado;
     }
 
-    public Map<Subestacao, Integer> analisarCentralidade() {
-        return grafoService.calcularCentralidade();
+    public Set<Subestacao> findSubestacoesCriticas() {
+        return grafoService.findSubestacoesCriticas();
+    }
+
+    public List<LinhaDeTransmissao> findLinhasDeTransmissaoCriticas() {
+        return grafoService.findLinhasDeTransmissaoCriticas();
     }
 }
