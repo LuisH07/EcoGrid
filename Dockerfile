@@ -16,6 +16,7 @@ WORKDIR /app
 
 # Copia o JAR da imagem de build
 COPY --from=build /app/target/*.jar app.jar
+COPY --from=build /app/src/main/resources/data /app/data
 
 # Porta do Spring Boot
 EXPOSE 8080

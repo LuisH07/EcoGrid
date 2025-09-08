@@ -1,9 +1,7 @@
 package com.ecogrid.mapper.facade;
 
-import com.ecogrid.mapper.exception.LinhaDeTransmissaoInvalidaException;
-import com.ecogrid.mapper.exception.LinhaDeTransmissaoNaoEncontradaException;
-import com.ecogrid.mapper.exception.SubestacaoInvalidaException;
-import com.ecogrid.mapper.exception.SubestacaoNaoEncontradaException;
+import com.ecogrid.mapper.exception.RecursoInvalidoException;
+import com.ecogrid.mapper.exception.RecursoNaoEncontradoException;
 import com.ecogrid.mapper.model.AreaProtegida;
 import com.ecogrid.mapper.model.Subestacao;
 import com.ecogrid.mapper.model.transmissao.LinhaDeTransmissao;
@@ -35,7 +33,7 @@ public class GrafoFacade {
 
     public boolean verificarInterseccaoEntreDuasSubestacoes(Subestacao subestacaoA, Subestacao subestacaoB) {
         if (subestacaoA == null || subestacaoB == null) {
-            throw new SubestacaoInvalidaException("Subestação inválida");
+            throw new RecursoInvalidoException("Subestação", "Subestação nula ao verificar intersecção");
         }
         return areaProtegidaService.verificarInterseccaoEntreDuasSubestacoes(subestacaoA, subestacaoB);
     }
@@ -58,7 +56,7 @@ public class GrafoFacade {
                     grafoService.findSubestacoesByNomeLinha(linha.getInformacoesAdministrativas().getNome());
 
             if (subestacoesDaLinha.isEmpty()) {
-                throw new SubestacaoNaoEncontradaException("Subestações da linha não encontradas");
+                throw new RecursoInvalidoException("Subestação", "Não há subestações na linha");
             }
 
             linha.setSubestacaoA(subestacoesDaLinha.get(0));
@@ -82,8 +80,8 @@ public class GrafoFacade {
         return grafoService.findSubestacaoByNome(nome);
     }
 
-    public List<LinhaDeTransmissao> findAllLinhasDeTranmissao() {
-        return grafoService.findAllLinhasDeTranmissao();
+    public List<LinhaDeTransmissao> findAllLinhasDeTransmissao() {
+        return grafoService.findAllLinhasDeTransmissao();
     }
 
     public int findQuantidadeDeSubestacoes() {
@@ -92,11 +90,11 @@ public class GrafoFacade {
 
     public List<LinhaDeTransmissao> findLinhasBySubestacao(Subestacao subestacao) {
         if (subestacao == null) {
-            throw new SubestacaoInvalidaException("Subestação inválida");
+            throw new RecursoInvalidoException("Subestação", "Subestação nula ao procurar linhas");
         }
 
         if (!grafoService.getGrafo().containsKey(subestacao)) {
-            throw new SubestacaoNaoEncontradaException("Subestação não encontrada no grafo");
+            throw new RecursoNaoEncontradoException("Grafo", "Subestação", subestacao);
         }
 
         return grafoService.findLinhasBySubestacao(subestacao);
@@ -108,18 +106,23 @@ public class GrafoFacade {
 
     public void createLinhaDeTransmissao(LinhaDeTransmissao linhaDeTransmissao) {
         if (linhaDeTransmissao == null) {
-            throw new LinhaDeTransmissaoInvalidaException("Linha de transmissão inválida");
+            throw new RecursoInvalidoException(
+                    "Linha de transmissão", "Linha de transmissão nula ao criar nova linha de transmissão"
+            );
         }
 
         Subestacao subestacaoA = linhaDeTransmissao.getSubestacaoA();
         Subestacao subestacaoB = linhaDeTransmissao.getSubestacaoB();
 
         if (subestacaoA == null || subestacaoB == null) {
-            throw new SubestacaoInvalidaException("Subestação inválida");
+            throw new RecursoInvalidoException("Subestação", "Subestação nula ao criar linha de transmissão");
         }
 
-        if (!grafoService.getGrafo().containsKey(subestacaoA) || !grafoService.getGrafo().containsKey(subestacaoB)) {
-            throw new SubestacaoNaoEncontradaException("Subestação não encontrada no grafo");
+        if (!grafoService.getGrafo().containsKey(subestacaoA)) {
+            throw new RecursoNaoEncontradoException("Grafo", "Subestação", subestacaoA);
+        }
+        if (!grafoService.getGrafo().containsKey(subestacaoB)) {
+            throw new RecursoNaoEncontradoException("Grafo", "Subestação", subestacaoB);
         }
 
         grafoService.createLinhaDeTransmissao(linhaDeTransmissao);
@@ -127,17 +130,20 @@ public class GrafoFacade {
 
     public void deleteLinhaDeTransmissao(LinhaDeTransmissao linhaDeTransmissao) {
         if (linhaDeTransmissao == null) {
-            throw new LinhaDeTransmissaoInvalidaException("Linha de transmissão inválida");
+            throw new RecursoInvalidoException("Linha de transmissão", "Linha de transmissão nula para realizar delete");
         }
 
-        if (!grafoService.findAllLinhasDeTranmissao().contains(linhaDeTransmissao)) {
-            throw new LinhaDeTransmissaoNaoEncontradaException("Linha de tramissão não encontrada no grafo");
+        if (!grafoService.findAllLinhasDeTransmissao().contains(linhaDeTransmissao)) {
+            throw new RecursoNaoEncontradoException("Grafo", "Linha de transmissão", linhaDeTransmissao);
         }
 
         grafoService.deleteLinhaDeTransmissao(linhaDeTransmissao);
     }
 
-    public List<Subestacao> encontrarRotaSegura(Subestacao subOrigem, Subestacao subDestino) {
+    public List<Subestacao> findRotaSegura(String nomeSubOrigem, String nomeSubDestino) {
+        Subestacao subOrigem = findSubestacaoByNome(nomeSubOrigem);
+        Subestacao subDestino = findSubestacaoByNome(nomeSubDestino);
+
         List<Subestacao> rota = grafoService.algoritmoAStar(subOrigem, subDestino);
 
         if (rota.size() < 3) {
@@ -171,7 +177,7 @@ public class GrafoFacade {
                 if (flagMelhoria) break;
             }
             contador++;
-        } while (flagMelhoria && contador < 150);
+        } while (flagMelhoria && contador < 50);
 
         return rotaMelhorada;
     }
@@ -179,5 +185,4 @@ public class GrafoFacade {
     public Map<Subestacao, Integer> analisarCentralidade() {
         return grafoService.calcularCentralidade();
     }
-
 }

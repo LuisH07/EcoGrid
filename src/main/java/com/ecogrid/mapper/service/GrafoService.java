@@ -1,5 +1,6 @@
 package com.ecogrid.mapper.service;
 
+import com.ecogrid.mapper.exception.*;
 import com.ecogrid.mapper.model.transmissao.LinhaDeTransmissao;
 import com.ecogrid.mapper.model.Subestacao;
 import com.ecogrid.mapper.util.FormatadorUtil;
@@ -35,7 +36,7 @@ public class GrafoService {
                             .allMatch(nomeUpper::contains);
                 })
                 .findFirst()
-                .orElse(null);
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Subestacao", "nome", palavras));
     }
 
     public List<Subestacao> findSubestacoesByNomeLinha(String nomeLinha) {
@@ -68,11 +69,7 @@ public class GrafoService {
         Subestacao subA = findSubestacaoByPalavras(palavrasSubA);
         Subestacao subB = findSubestacaoByPalavras(palavrasSubB);
 
-        if (subA != null && subB != null) {
-            return List.of(subA, subB);
-        }
-
-        return Collections.emptyList();
+        return List.of(subA, subB);
     }
 
     public int findQuantidadeDeSubestacoes() {
@@ -99,7 +96,7 @@ public class GrafoService {
 
     // -------------------------------------- Linhas de transmissão
 
-    public List<LinhaDeTransmissao> findAllLinhasDeTranmissao() {
+    public List<LinhaDeTransmissao> findAllLinhasDeTransmissao() {
         List<LinhaDeTransmissao> allLinhas = new ArrayList<>();
 
         for (List<LinhaDeTransmissao> linhas: grafo.values()) {

@@ -13,13 +13,12 @@ public class EcogridMapperApplication {
 
         GrafoFacade grafoFacade = context.getBean(GrafoFacade.class);
 
-        String caminhoSubestacoes = "src/main/resources/data/subestacoes.csv";
-        String caminhoLinhasDeTransmissao = "src/main/resources/data/linhas-de-transmissao.csv";
-        String caminhoAreasProtegidas = "src/main/resources/data/limites_ucs_federais_21072025/limites_ucs_federais_21072025.shp";
+        String caminhoSubestacoes = "/app/data/subestacoes.csv";
+        String caminhoLinhasDeTransmissao = "/app/data/linhas-de-transmissao.csv";
+        String caminhoAreasProtegidas = "/app/data/limites_ucs_federais_21072025/limites_ucs_federais_21072025.shp";
 
         grafoFacade.carregarGrafo(caminhoSubestacoes, caminhoLinhasDeTransmissao, caminhoAreasProtegidas);
 
-        System.out.println("Grafo carregado no startup!");
+        System.out.println("Grafo carregado");
     }
-
 }

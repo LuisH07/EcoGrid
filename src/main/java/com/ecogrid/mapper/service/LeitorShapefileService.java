@@ -1,6 +1,6 @@
 package com.ecogrid.mapper.service;
 
-import com.ecogrid.mapper.exception.LeituraShapefileException;
+import com.ecogrid.mapper.exception.*;
 import com.ecogrid.mapper.model.AreaProtegida;
 import com.ecogrid.mapper.model.enums.UnidadesFederativasNordeste;
 import com.ecogrid.mapper.util.FormatadorUtil;
@@ -28,7 +28,7 @@ public class LeitorShapefileService {
         try {
             File arquivo = new File(caminho);
             if (!arquivo.exists()) {
-                throw new LeituraShapefileException("Arquivo " + caminho + " não encontrado");
+                throw new RecursoNaoEncontradoException("Shapefile", "caminho", caminho);
             }
 
             System.setProperty("org.geotools.referencing.forceXY", "true");
@@ -47,8 +47,8 @@ public class LeitorShapefileService {
                     }
                 }
             }
-        } catch (IOException exception) {
-            throw new LeituraShapefileException("Erro ao ler " + caminho + " Shapefile", exception);
+        } catch (IOException erro) {
+            throw new LeituraFalhouException("Erro ao ler shapefile em " + caminho, erro);
         } finally {
             if (dataStore != null) {
                 dataStore.dispose();

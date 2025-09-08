@@ -1,6 +1,6 @@
 package com.ecogrid.mapper.util;
 
-import com.ecogrid.mapper.exception.DataInvalidaException;
+import com.ecogrid.mapper.exception.*;
 import com.ecogrid.mapper.model.enums.UnidadesFederativasNordeste;
 import org.locationtech.jts.geom.Point;
 import java.time.LocalDate;
@@ -10,7 +10,6 @@ import java.time.format.DateTimeParseException;
 public class FormatadorUtil {
 
     public static String normalizarNomeSubestacao(String nomeSubestacao) {
-
         String[] partesNome = nomeSubestacao.trim().split("\\s+");
 
         StringBuilder nomeBuilder = new StringBuilder();
@@ -47,8 +46,8 @@ public class FormatadorUtil {
     public static LocalDate parseData(String dataStr) {
         try {
             return LocalDate.parse(dataStr, DateTimeFormatter.ofPattern("dd/MM/yyyy"));
-        } catch (DateTimeParseException exception) {
-            throw new DataInvalidaException("Formato de data inválido: " + dataStr, exception);
+        } catch (DateTimeParseException erro) {
+            throw new RecursoInvalidoException("Formato de data inválido", erro);
         }
     }
 
@@ -63,7 +62,7 @@ public class FormatadorUtil {
         if (unidadeFederativa == null || unidadeFederativa.isBlank()) return null;
         try {
             return UnidadesFederativasNordeste.valueOf(unidadeFederativa.trim().toUpperCase());
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException exception) {
             return null;
         }
     }

@@ -1,7 +1,6 @@
 package com.ecogrid.mapper.service;
 
-import com.ecogrid.mapper.exception.CoordenadasInvalidasException;
-import com.ecogrid.mapper.exception.LeituraCsvException;
+import com.ecogrid.mapper.exception.*;
 import com.ecogrid.mapper.model.enums.UnidadesFederativasNordeste;
 import com.ecogrid.mapper.model.transmissao.InformacoesAdministrativas;
 import com.ecogrid.mapper.model.transmissao.LinhaDeTransmissao;
@@ -35,8 +34,8 @@ public class LeitorCsvService {
                 Subestacao subestacao = criarSubestacaoCsv(linhaCsv);
                 subestacoes.add(subestacao);
             }
-        } catch (IOException exception) {
-            throw new LeituraCsvException("Erro ao ler arquivo de subestações CSV: " + caminho, exception);
+        } catch (IOException erro) {
+            throw new LeituraFalhouException("Erro ao ler arquivo de subestações CSV: " + caminho, erro);
         }
 
         return subestacoes;
@@ -85,8 +84,8 @@ public class LeitorCsvService {
             double longitude = Double.parseDouble(longitudeStr);
             double latitude = Double.parseDouble(latitudeStr);
             return new GeometryFactory().createPoint(new Coordinate(longitude, latitude));
-        } catch (NumberFormatException exception) {
-            throw new CoordenadasInvalidasException("Coordenadas inválidas: " + longitudeStr + ", " + latitudeStr, exception);
+        } catch (NumberFormatException erro) {
+            throw new RecursoInvalidoException("Coordenadas inválidas: " + longitudeStr + ", " + latitudeStr, erro);
         }
     }
 
@@ -103,9 +102,8 @@ public class LeitorCsvService {
                 LinhaDeTransmissao linhaDeTransmissao = criarLinhaDeTransmissaoCsv(linha);
                 linhasDeTransmissao.add(linhaDeTransmissao);
             }
-        } catch (IOException exception) {
-            throw new LeituraCsvException("Erro ao ler arquivo de linhas de transmissão CSV: " + caminho,
-                    exception);
+        } catch (IOException erro) {
+            throw new LeituraFalhouException("Erro ao ler arquivo de linhas de transmissão CSV: " + caminho, erro);
         }
 
         return linhasDeTransmissao;
