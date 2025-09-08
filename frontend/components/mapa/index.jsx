@@ -17,17 +17,109 @@ L.Icon.Default.mergeOptions({
   iconRetinaUrl:
     "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
   iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-  iconSize: [20, 32.8],
-  iconAnchor: [10, 32.8],
-  popupAnchor: [0, -32.8]  
+  shadowUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png",
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41],
 });
 
-function ZoomController({ elementoParaZoom }) {
+const customIconRotaAEstrela = new L.Icon({
+  iconUrl:
+    "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png",
+  shadowUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png",
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41],
+});
+
+const customIconRotaMelhorada = new L.Icon({
+  iconUrl:
+    "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png",
+  shadowUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png",
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41],
+});
+
+const customIconInicio = new L.Icon({
+  iconUrl:
+    "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png",
+  shadowUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png",
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41],
+});
+
+const customIconFim = new L.Icon({
+  iconUrl:
+    "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png",
+  shadowUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png",
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41],
+});
+
+const customIconCritico = new L.Icon({
+  iconUrl:
+    "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png",
+  shadowUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png",
+  iconSize: [30, 48],
+  iconAnchor: [15, 48],
+  popupAnchor: [1, -40],
+  shadowSize: [48, 48],
+});
+
+const customIconNormal = new L.Icon({
+  iconUrl:
+    "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-grey.png",
+  shadowUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png",
+  iconSize: [20, 32],
+  iconAnchor: [10, 32],
+  popupAnchor: [1, -32],
+  shadowSize: [32, 32],
+});
+
+const defaultIcon = new L.Icon.Default();
+
+function ZoomController({
+  elementoParaZoom,
+  modoVisualizacaoRota,
+  rotaAEstrela,
+  rotaMelhorada,
+  areasProtegidas,
+}) {
   const map = useMap();
   const lastElementId = useRef(null);
 
   useEffect(() => {
+    if (modoVisualizacaoRota) {
+      const todasCoordenadas = [
+        ...rotaAEstrela.map((sub) => [sub.lat, sub.lon]),
+        ...rotaMelhorada.map((sub) => [sub.lat, sub.lon]),
+        ...areasProtegidas.flatMap((area) => area.coords),
+      ];
+
+      if (todasCoordenadas.length > 0) {
+        const bounds = L.latLngBounds(todasCoordenadas);
+        if (bounds.isValid()) {
+          map.fitBounds(bounds, { padding: [50, 50], animate: true });
+        }
+      }
+      return;
+    }
+
     if (!elementoParaZoom) return;
 
     const elementId =
@@ -60,7 +152,14 @@ function ZoomController({ elementoParaZoom }) {
         console.error("Erro ao aplicar zoom na linha:", error);
       }
     }
-  }, [elementoParaZoom, map]);
+  }, [
+    elementoParaZoom,
+    map,
+    modoVisualizacaoRota,
+    rotaAEstrela,
+    rotaMelhorada,
+    areasProtegidas,
+  ]);
 
   return null;
 }
@@ -124,17 +223,90 @@ export default function Mapa({
   elementoParaZoom,
   popupAbertoId,
   popupTipo,
+  rotaAEstrela,
+  rotaMelhorada,
+  modoVisualizacaoRota,
+  onVoltarMapaNormal,
+  subestacoesCriticas,
+  modoVisualizacaoCritica,
 }) {
+  const mapRef = useRef();
+
+  const isSubestacaoCritica = (subestacao) => {
+    return (
+      subestacoesCriticas &&
+      subestacoesCriticas.some((sub) => sub.id === subestacao.id)
+    );
+  };
+
   return (
     <div className="mapa-container">
-      <MapContainer center={[-8.0, -37.0]} zoom={6} className="mapa">
+      {modoVisualizacaoRota && (
+        <div className="mapa-overlay-controls">
+          <button onClick={onVoltarMapaNormal} className="botao-voltar-overlay">
+            ← Voltar ao Mapa Normal
+          </button>
+          <div className="legenda-rotas">
+            <div className="legenda-item">
+              <div className="cor-rota-aestrela"></div>
+              <span>Rota A* ({rotaAEstrela.length} subestações)</span>
+            </div>
+            <div className="legenda-item">
+              <div className="cor-rota-melhorada"></div>
+              <span>Rota Alternativa ({rotaMelhorada.length} subestações)</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {modoVisualizacaoCritica && (
+        <div className="mapa-overlay-controls" style={{ top: "80px" }}>
+          <div className="legenda-rotas">
+            <div className="legenda-item">
+              <div
+                style={{
+                  width: "20px",
+                  height: "20px",
+                  background: "red",
+                  borderRadius: "50%",
+                }}
+              ></div>
+              <span>Subestações Críticas</span>
+            </div>
+            <div className="legenda-item">
+              <div
+                style={{
+                  width: "20px",
+                  height: "20px",
+                  background: "grey",
+                  borderRadius: "50%",
+                  opacity: "0.5",
+                }}
+              ></div>
+              <span>Elementos Normais</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <MapContainer
+        center={[-8.0, -37.0]}
+        zoom={6}
+        className="mapa"
+        ref={mapRef}
+      >
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
 
-        {/* Controlador de zoom */}
-        <ZoomController elementoParaZoom={elementoParaZoom} />
+        <ZoomController
+          elementoParaZoom={elementoParaZoom}
+          modoVisualizacaoRota={modoVisualizacaoRota}
+          rotaAEstrela={rotaAEstrela}
+          rotaMelhorada={rotaMelhorada}
+          areasProtegidas={areasProtegidas}
+        />
 
         <PopupController
           popupAbertoId={popupAbertoId}
@@ -143,122 +315,13 @@ export default function Mapa({
           linhasTransmissao={linhasTransmissao}
         />
 
-        {/* Marcadores das subestações */}
-        {subestacoes.map((sub) => (
-          <Marker
-            key={sub.id}
-            position={[sub.lat, sub.lon]}
-            eventHandlers={{
-              click: () => {
-                console.log("Subestação clicada:", sub.id);
-                onSubestacaoSelecionada(sub);
-              },
-            }}
-          >
-            <Popup>
-              <div>
-                <h3>{sub.nome}</h3>
-                <p>
-                  <strong>ID:</strong> {sub.id}
-                </p>
-                <p>
-                  <strong>Coordenadas:</strong> {sub.lat.toFixed(4)},{" "}
-                  {sub.lon.toFixed(4)}
-                </p>
-                {sub.dadosCompletos && (
-                  <>
-                    <p>
-                      <strong>UF:</strong>{" "}
-                      {sub.dadosCompletos.unidadeFederativaNordeste}
-                    </p>
-                    <p>
-                      <strong>Agente:</strong>{" "}
-                      {sub.dadosCompletos.agentePrincipal}
-                    </p>
-                    <p>
-                      <strong>Data Prevista:</strong>{" "}
-                      {sub.dadosCompletos.dataPrevista}
-                    </p>
-                    <p>
-                      <strong>Data Entrada:</strong>{" "}
-                      {sub.dadosCompletos.dataEntrada}
-                    </p>
-                  </>
-                )}
-              </div>
-            </Popup>
-          </Marker>
-        ))}
-
-        {/* Linhas de transmissão */}
-        {linhasTransmissao.map((linha) => (
-          <Polyline
-            key={linha.id}
-            positions={[
-              [linha.subA.lat, linha.subA.lon],
-              [linha.subB.lat, linha.subB.lon],
-            ]}
-            color={linha.cor}
-            weight={4}
-            eventHandlers={{
-              click: (e) => {
-                console.log("Linha clicada:", linha.id);
-                onLinhaSelecionada(linha);
-                L.DomEvent.stopPropagation(e);
-              },
-            }}
-          >
-            <Popup>
-              <div>
-                <h3>{linha.dadosCompletos.nomeEquipamento || "Linha de Transmissão"}</h3>
-                <p>
-                  <strong>De:</strong> {linha.subA.nome}
-                </p>
-                <p>
-                  <strong>Para:</strong> {linha.subB.nome}
-                </p>
-                <p>
-                  <strong>Tensão:</strong> {linha.tensao}
-                </p>
-                <p>
-                  <strong>Comprimento:</strong> {linha.comprimento}
-                </p>
-                <p>
-                  <strong>Status:</strong>{" "}
-                  {linha.dadosCompletos.sensivel ? "Sensível" : "Normal"}
-                </p>
-                {linha.dadosCompletos.informacoesAdministrativas && (
-                  <>
-                    <p>
-                      <strong>Agente:</strong>{" "}
-                      {linha.dadosCompletos.informacoesAdministrativas.agenteProprietario}
-                    </p>
-                    <p>
-                      <strong>Outorga:</strong>{" "}
-                      {linha.dadosCompletos.informacoesAdministrativas.numeroOutorga}
-                    </p>
-                    <p>
-                      <strong>Data Prevista:</strong>{" "}
-                      {linha.dadosCompletos.informacoesAdministrativas.dataPrevista}
-                    </p>
-                    <p>
-                      <strong>Data Entrada:</strong>{" "}
-                      {linha.dadosCompletos.informacoesAdministrativas.dataEntrada}
-                    </p>
-                  </>
-                )}
-              </div>
-            </Popup>
-          </Polyline>
-        ))}
-
-        {/* Áreas protegidas */}
+        {/* ÁREAS PROTEGIDAS */}
         {areasProtegidas.map((area) => (
           <Polygon
             key={area.id}
             positions={area.coords}
             color="green"
-            fillOpacity={0.3}
+            fillOpacity={modoVisualizacaoCritica ? 0.1 : 0.3}
           >
             <Popup>
               <div>
@@ -280,6 +343,224 @@ export default function Mapa({
             </Popup>
           </Polygon>
         ))}
+
+        {modoVisualizacaoRota ? (
+          <>
+            {/* Renderizar rota A* */}
+            {rotaAEstrela.map((subestacao, index) => (
+              <Marker
+                key={`aestrela-${subestacao.id}-${index}`}
+                position={[subestacao.lat, subestacao.lon]}
+                icon={customIconRotaAEstrela}
+              >
+                <Popup>
+                  <div>
+                    <h3>{subestacao.nome}</h3>
+                    <p>
+                      <strong>Rota A* - Ponto {index + 1}</strong>
+                    </p>
+                    <p>ID: {subestacao.id}</p>
+                    <p>
+                      Estado:{" "}
+                      {subestacao.dadosCompletos.unidadeFederativaNordeste}
+                    </p>
+                    <p>Agente: {subestacao.dadosCompletos.agentePrincipal}</p>
+                  </div>
+                </Popup>
+              </Marker>
+            ))}
+
+            {/* Renderizar rota melhorada */}
+            {rotaMelhorada.map((subestacao, index) => (
+              <Marker
+                key={`melhorada-${subestacao.id}-${index}`}
+                position={[subestacao.lat, subestacao.lon]}
+                icon={customIconRotaMelhorada}
+              >
+                <Popup>
+                  <div>
+                    <h3>{subestacao.nome}</h3>
+                    <p>
+                      <strong>Rota Melhorada - Ponto {index + 1}</strong>
+                    </p>
+                    <p>ID: {subestacao.id}</p>
+                    <p>
+                      Estado:{" "}
+                      {subestacao.dadosCompletos.unidadeFederativaNordeste}
+                    </p>
+                    <p>Agente: {subestacao.dadosCompletos.agentePrincipal}</p>
+                  </div>
+                </Popup>
+              </Marker>
+            ))}
+
+            {/* Linhas da rota A* */}
+            {rotaAEstrela.length > 1 && (
+              <Polyline
+                positions={rotaAEstrela.map((sub) => [sub.lat, sub.lon])}
+                color="blue"
+                weight={4}
+                dashArray="5, 10"
+              />
+            )}
+
+            {/* Linhas da rota melhorada */}
+            {rotaMelhorada.length > 1 && (
+              <Polyline
+                positions={rotaMelhorada.map((sub) => [sub.lat, sub.lon])}
+                color="green"
+                weight={6}
+              />
+            )}
+
+            {/* Marcadores de início e fim */}
+            {rotaAEstrela.length > 0 && (
+              <>
+                <Marker
+                  position={[rotaAEstrela[0].lat, rotaAEstrela[0].lon]}
+                  icon={customIconInicio}
+                >
+                  <Popup>
+                    <div>
+                      <h3>Início - {rotaAEstrela[0].nome}</h3>
+                      <p>Ponto de partida da rota</p>
+                    </div>
+                  </Popup>
+                </Marker>
+                <Marker
+                  position={[
+                    rotaAEstrela[rotaAEstrela.length - 1].lat,
+                    rotaAEstrela[rotaAEstrela.length - 1].lon,
+                  ]}
+                  icon={customIconFim}
+                >
+                  <Popup>
+                    <div>
+                      <h3>
+                        Destino - {rotaAEstrela[rotaAEstrela.length - 1].nome}
+                      </h3>
+                      <p>Ponto de chegada da rota</p>
+                    </div>
+                  </Popup>
+                </Marker>
+              </>
+            )}
+          </>
+        ) : (
+          <>
+            {/* SUBESTAÇÕES */}
+            {subestacoes.map((sub) => {
+              const isCritica = isSubestacaoCritica(sub);
+              return (
+                <Marker
+                  key={sub.id}
+                  position={[sub.lat, sub.lon]}
+                  icon={
+                    modoVisualizacaoCritica
+                      ? isCritica
+                        ? customIconCritico
+                        : customIconNormal
+                      : defaultIcon
+                  }
+                  opacity={modoVisualizacaoCritica ? (isCritica ? 1 : 0.3) : 1}
+                  eventHandlers={{
+                    click: () => {
+                      onSubestacaoSelecionada(sub);
+                    },
+                  }}
+                >
+                  <Popup>
+                    <div>
+                      <h3>{sub.nome}</h3>
+                      {isCritica && (
+                        <p style={{ color: "red", fontWeight: "bold" }}>
+                          CRÍTICA
+                        </p>
+                      )}
+                      <p>
+                        <strong>ID:</strong> {sub.id}
+                      </p>
+                      <p>
+                        <strong>Coordenadas:</strong> {sub.lat.toFixed(4)},{" "}
+                        {sub.lon.toFixed(4)}
+                      </p>
+                      {sub.dadosCompletos && (
+                        <>
+                          <p>
+                            <strong>UF:</strong>{" "}
+                            {sub.dadosCompletos.unidadeFederativaNordeste}
+                          </p>
+                          <p>
+                            <strong>Agente:</strong>{" "}
+                            {sub.dadosCompletos.agentePrincipal}
+                          </p>
+                          <p>
+                            <strong>Data Prevista:</strong>{" "}
+                            {sub.dadosCompletos.dataPrevista}
+                          </p>
+                          <p>
+                            <strong>Data Entrada:</strong>{" "}
+                            {sub.dadosCompletos.dataEntrada}
+                          </p>
+                        </>
+                      )}
+                    </div>
+                  </Popup>
+                </Marker>
+              );
+            })}
+
+            {/* LINHAS DE TRANSMISSÃO*/}
+            {linhasTransmissao.map((linha) => (
+              <Polyline
+                key={linha.id}
+                positions={[
+                  [linha.subA.lat, linha.subA.lon],
+                  [linha.subB.lat, linha.subB.lon],
+                ]}
+                color={linha.cor || "blue"}
+                weight={4}
+                opacity={1}
+                eventHandlers={{
+                  click: (e) => {
+                    onLinhaSelecionada(linha);
+                    L.DomEvent.stopPropagation(e);
+                  },
+                }}
+              >
+                <Popup>
+                  <div>
+                    <h3>
+                      {linha.dadosCompletos?.nomeEquipamento ||
+                        "Linha de Transmissão"}
+                    </h3>
+                    <p>
+                      <strong>ID:</strong> {linha.id}
+                    </p>
+                    <p>
+                      <strong>De:</strong> {linha.subA.nome} (ID:{" "}
+                      {linha.subA.id})
+                    </p>
+                    <p>
+                      <strong>Para:</strong> {linha.subB.nome} (ID:{" "}
+                      {linha.subB.id})
+                    </p>
+                    <p>
+                      <strong>Tensão:</strong> {linha.tensao}
+                    </p>
+                    <p>
+                      <strong>Comprimento:</strong> {linha.comprimento}
+                    </p>
+                    <p>
+                      <strong>Status:</strong>{" "}
+                      {linha.dadosCompletos?.sensivel ? "Sensível" : "Normal"}
+                    </p>
+                  </div>
+                </Popup>
+              </Polyline>
+            ))}
+          </>
+        )}
       </MapContainer>
     </div>
   );

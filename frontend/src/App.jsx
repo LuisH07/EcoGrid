@@ -17,7 +17,6 @@ const converterSubestacaoBackendParaFrontend = (subestacaoBackend) => {
 };
 
 const converterLinhaBackendParaFrontend = (linhaBackend, subestacoesMap) => {
-  // Encontrar subestações pelo ID
   const subA = subestacoesMap[linhaBackend.subestacaoAId];
   const subB = subestacoesMap[linhaBackend.subestacaoBId];
 
@@ -332,6 +331,10 @@ function App() {
   const [subestacoes, setSubestacoes] = useState([]);
   const [linhasTransmissao, setLinhasTransmissao] = useState([]);
   const [areasProtegidas, setAreasProtegidas] = useState([]);
+  const [subestacoesCriticas, setSubestacoesCriticas] = useState([]);
+  const [linhasTransmissaoCriticas, setLinhasTransmissaoCriticas] = useState(
+    []
+  );
   const [pesquisa, setPesquisa] = useState("");
   const [subestacaoSelecionada, setSubestacaoSelecionada] = useState(null);
   const [linhaSelecionada, setLinhaSelecionada] = useState(null);
@@ -340,6 +343,10 @@ function App() {
   const [popupTipo, setPopupTipo] = useState(null);
   const [subestacaoA, setSubestacaoA] = useState(null);
   const [subestacaoB, setSubestacaoB] = useState(null);
+  const [rotaAEstrela, setRotaAEstrela] = useState([]);
+  const [rotaMelhorada, setRotaMelhorada] = useState([]);
+  const [modoVisualizacaoRota, setModoVisualizacaoRota] = useState(false);
+  const [modoVisualizacaoCritica, setModoVisualizacaoCritica] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState(null);
@@ -428,9 +435,144 @@ function App() {
     setIsEditMode(!isEditMode);
   };
 
+  const handleSetOffEditMode = () => {
+    setIsEditMode(false);
+  };
+
   const handleLimparEditMode = () => {
     setSubestacaoA(null);
     setSubestacaoB(null);
+  };
+
+  const handleEncontrarRotaMelhorada = async () => {
+    try {
+      setCarregando(true);
+
+      if (!subestacaoA || !subestacaoB) {
+        throw new Error("Selecione ambas as subestações primeiro");
+      }
+
+      const nomeOrigemCodificado = encodeURIComponent(subestacaoA.nome);
+      const nomeDestinoCodificado = encodeURIComponent(subestacaoB.nome);
+
+      const response = await fetch(
+        `http://localhost:8080/api/v1/rotaSegura?nomeSubOrigem=${nomeOrigemCodificado}&nomeSubDestino=${nomeDestinoCodificado}`,
+        {
+          method: "GET",
+          headers: {
+            Accept: "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(
+          `Erro ${response.status}: ${response.statusText} - ${errorText}`
+        );
+      }
+
+      const dadosRota = await response.json();
+
+      if (!Array.isArray(dadosRota) || dadosRota.length !== 2) {
+        throw new Error("Resposta do servidor em formato inválido");
+      }
+
+      const rotaAEstrelaConvertida = dadosRota[0].map(
+        converterSubestacaoBackendParaFrontend
+      );
+      const rotaMelhoradaConvertida = dadosRota[1].map(
+        converterSubestacaoBackendParaFrontend
+      );
+
+      setRotaAEstrela(rotaAEstrelaConvertida);
+      setRotaMelhorada(rotaMelhoradaConvertida);
+
+      setModoVisualizacaoRota(true);
+    } catch (error) {
+      console.error("Erro ao encontrar rota:", error);
+      setErro("Erro ao calcular rota: " + error.message);
+
+      //fallback
+      console.warn("Usando dados de exemplo para desenvolvimento");
+      const dadosExemplo = [
+        [
+          {
+            idInstalacao: "CEMLD",
+            nome: "SUB MILAGRES II",
+            unidadeFederativaNordeste: "CE",
+            idAgentePrincipal: "GST",
+            agentePrincipal:
+              "GIOVANNI SANGUINETTI TRANSMISSORA DE ENERGIA S.A.",
+            dataPrevista: "2020-03-15",
+            dataEntrada: "2020-04-11",
+            latitude: -7.343106001999956,
+            longitude: -38.92654900299999,
+          },
+          {
+            idInstalacao: "CECRA2",
+            nome: "SUB CRATO II",
+            unidadeFederativaNordeste: "CE",
+            idAgentePrincipal: "DP2",
+            agentePrincipal: "DOM PEDRO II TRANSMISSORA DE ENERGIA SPE LTDA.",
+            dataPrevista: "2023-09-20",
+            dataEntrada: null,
+            latitude: -7.200555503999965,
+            longitude: -39.411944403999996,
+          },
+        ],
+        [
+          {
+            idInstalacao: "CEMLD",
+            nome: "SUB MILAGRES II",
+            unidadeFederativaNordeste: "CE",
+            idAgentePrincipal: "GST",
+            agentePrincipal:
+              "GIOVANNI SANGUINETTI TRANSMISSORA DE ENERGIA S.A.",
+            dataPrevista: "2020-03-15",
+            dataEntrada: "2020-04-11",
+            latitude: -7.343106001999956,
+            longitude: -38.92654900299999,
+          },
+          {
+            idInstalacao: "PIQMN",
+            nome: "SUB QUEIMADA NOVA 2",
+            unidadeFederativaNordeste: "PI",
+            idAgentePrincipal: "STJ",
+            agentePrincipal: "TRANSMISSORA SERTANEJA DE ELETRICIDADE S.A.",
+            dataPrevista: "2020-06-30",
+            dataEntrada: "2021-05-25",
+            latitude: -8.598881006999989,
+            longitude: -41.424628004,
+          },
+        ],
+      ];
+
+      const rotaAEstrelaConvertida = dadosExemplo[0].map(
+        converterSubestacaoBackendParaFrontend
+      );
+      const rotaMelhoradaConvertida = dadosExemplo[1].map(
+        converterSubestacaoBackendParaFrontend
+      );
+
+      setRotaAEstrela(rotaAEstrelaConvertida);
+      setRotaMelhorada(rotaMelhoradaConvertida);
+      setModoVisualizacaoRota(true);
+    } finally {
+      setCarregando(false);
+    }
+  };
+
+  const handleVoltarMapaNormal = () => {
+    setModoVisualizacaoRota(false);
+    setRotaAEstrela([]);
+    setRotaMelhorada([]);
+    handleSetOffEditMode();
+    handleLimparEditMode();
+  };
+
+  const handleToggleVisualizacaoCritMode = () => {
+    setModoVisualizacaoCritica(!modoVisualizacaoCritica);
   };
 
   useEffect(() => {
@@ -451,23 +593,47 @@ function App() {
 
         try {
           //carregar subestações
-          const responseSub = await fetch("http://localhost:8080/api/v1/subestacoes");
+          const responseSub = await fetch(
+            "http://localhost:8080/api/v1/subestacoes"
+          );
 
           if (!responseSub.ok) throw new Error("Erro ao carregar subestações");
           const subestacoesBackend = await responseSub.json();
 
           //carregar linhas de transmissão
-          const responseLinhas = await fetch("http://localhost:8080/api/v1/linhasDeTransmissao");
+          const responseLinhas = await fetch(
+            "http://localhost:8080/api/v1/linhasDeTransmissao"
+          );
 
           if (!responseLinhas.ok) throw new Error("Erro ao carregar linhas");
           const linhasBackend = await responseLinhas.json();
 
           //carregar áreas protegidas
-          const responseAreas = await fetch("http://localhost:8080/api/v1/areasProtegidas");
+          const responseAreas = await fetch(
+            "http://localhost:8080/api/v1/areasProtegidas"
+          );
 
           if (!responseAreas.ok)
             throw new Error("Erro ao carregar áreas protegidas");
           const areasBackend = await responseAreas.json();
+
+          //carregar subestações críticas
+          const responseSubCrit = await fetch(
+            "http://localhost:8080/api/v1/subestacoes/criticas"
+          );
+
+          if (!responseSubCrit.ok)
+            throw new Error("Erro ao carregar subestações críticas");
+          const subestacoesCriticasBackend = await responseSubCrit.json();
+
+          //carregar linhas de transmissão críticas
+          const responseLinhaCrit = await fetch(
+            "http://localhost:8080/api/v1/linhasDeTransmissao/criticas"
+          );
+
+          if (!responseLinhaCrit.ok)
+            throw new Error("Erro ao carregar linhas críticas");
+          const linhaCriticasBackend = await responseLinhaCrit.json();
 
           //converter dados
           const subestacoesConvertidas = subestacoesBackend.map(
@@ -487,9 +653,22 @@ function App() {
             converterAreaProtegidaBackendParaFrontend
           );
 
+          const subestacoesCriticasConvertidas = subestacoesCriticasBackend.map(
+            converterSubestacaoBackendParaFrontend
+          );
+
+          const linhasCriticasConvertidas = linhaCriticasBackend.map((linha) =>
+            converterLinhaBackendParaFrontend(linha, subestacoesMap)
+          );
+
           setSubestacoes(subestacoesConvertidas);
           setLinhasTransmissao(linhasConvertidas);
           setAreasProtegidas(areasConvertidas);
+          setSubestacoesCriticas(subestacoesCriticasConvertidas);
+          setLinhasTransmissaoCriticas(linhasCriticasConvertidas);
+
+          console.log("Subestações críticas:", subestacoesCriticasConvertidas);
+          console.log("Linhas críticas:", linhasCriticasConvertidas);
         } catch (error) {
           console.warn(
             "Erro ao conectar com backend, usando dados de teste:",
@@ -634,16 +813,28 @@ function App() {
           onLimparEditMode={handleLimparEditMode}
           subestacoes={subestacoes}
           linhasTransmissao={linhasTransmissao}
+          onEncontrarRotaMelhorada={handleEncontrarRotaMelhorada}
+          modoVisualizacaoRota={modoVisualizacaoRota}
+          rotaGerada={rotaMelhorada}
+          modoVisualizacaoCritica={modoVisualizacaoCritica}
+          handleToggleVisualizacaoCritMode={handleToggleVisualizacaoCritMode}
+          linhasTransmissaoCriticas={linhasTransmissaoCriticas}
         />
         <Mapa
           subestacoes={subestacoes}
           linhasTransmissao={linhasTransmissao}
           areasProtegidas={areasProtegidas}
+          subestacoesCriticas={subestacoesCriticas}
+          modoVisualizacaoCritica={modoVisualizacaoCritica}
           onSubestacaoSelecionada={handleSubestacaoSelecionada}
           onLinhaSelecionada={handleLinhaSelecionada}
           elementoParaZoom={elementoParaZoom}
           popupAbertoId={popupAbertoId}
           popupTipo={popupTipo}
+          rotaAEstrela={rotaAEstrela}
+          rotaMelhorada={rotaMelhorada}
+          modoVisualizacaoRota={modoVisualizacaoRota}
+          onVoltarMapaNormal={handleVoltarMapaNormal}
         />
       </div>
       <Footer />

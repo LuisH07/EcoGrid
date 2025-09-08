@@ -8,9 +8,9 @@
 }
 
 .dado-selecionado {
-    color: black;
-    padding-left: 10px;
-    margin: 0;
+  color: black;
+  padding-left: 10px;
+  margin: 0;
 }
 
 .menu-lateral h2 {
@@ -43,31 +43,31 @@
 }
 
 .search-button {
-    width: 25px;
-    height: 25px;
-    background-color: white;
-    border: 1px solid #273348;
-    border-radius: 5px;
-    margin-right: 1px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
-    float: left;
+  width: 25px;
+  height: 25px;
+  background-color: white;
+  border: 1px solid #273348;
+  border-radius: 5px;
+  margin-right: 1px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  float: left;
 }
 
 .select-button {
-    width: 80%;
-    height: 25px;
-    background-color: white;
-    border: 1px solid #273348;
-    border-radius: 5px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
+  width: 80%;
+  height: 25px;
+  background-color: white;
+  border: 1px solid #273348;
+  border-radius: 5px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
 }
 
 .grupo-controle input[type="text"] {
@@ -111,7 +111,7 @@
   background: white;
   border: 1px solid #ddd;
   border-radius: 4px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   max-height: 200px;
   overflow-y: auto;
   z-index: 1000;
@@ -134,7 +134,20 @@
 }
 
 .select-button.active {
-  background-color: #4CAF50;
+  background-color: #4caf50;
+  color: white;
+}
+
+.cancel-button {
+  width: 80%;
+  height: 25px;
+  border-radius: 5px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  background-color: #ff4444;
   color: white;
 }
 
@@ -158,4 +171,121 @@
   color: #666;
   margin-top: 5px;
   font-style: italic;
+}
+
+.modo-rota-controles {
+  padding: 15px;
+}
+
+.botao-voltar {
+  background: #273348;
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  width: 100%;
+  margin-bottom: 20px;
+  font-weight: bold;
+}
+
+.botao-voltar:hover {
+  background: #1e293b;
+}
+
+.info-rotas {
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 8px;
+  border-left: 4px solid #273348;
+  margin-bottom: 20px;
+}
+
+.estatistica-rota {
+  background: white;
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 15px;
+  border: 1px solid #e9ecef;
+}
+
+.estatistica-rota h4 {
+  margin: 0 0 10px 0;
+  color: #273348;
+  border-bottom: 2px solid #273348;
+  padding-bottom: 5px;
+}
+
+.estatistica-rota p {
+  margin: 5px 0;
+  font-size: 14px;
+  color: black;
+}
+
+.cor-azul {
+  color: #007bff;
+  font-weight: bold;
+}
+
+.cor-verde {
+  color: #28a745;
+  font-weight: bold;
+}
+
+.botao-encontrar-rota {
+  background: #28a745;
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  width: 100%;
+  margin-top: 10px;
+  font-weight: bold;
+}
+
+.botao-encontrar-rota:hover {
+  background: #218838;
+}
+
+.botao-encontrar-rota:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+}
+
+.controles .grupo-controle:last-child {
+  margin-bottom: 20px;
+}
+
+@media (max-height: 800px) {
+  .modo-rota-controles {
+    padding: 10px;
+  }
+
+  .info-rotas {
+    padding: 10px;
+  }
+
+  .estatistica-rota {
+    padding: 8px;
+  }
+}
+
+.grupo-checkbox {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 4px;
+  margin-left: 12px;
+}
+
+.grupo-checkbox p {
+  color: black;
+  font-size: 14px;
+}
+
+.grupo-checkbox input {
+  width: 18px;
+  height: 18px;
+  border: 1px solid black;
 }
