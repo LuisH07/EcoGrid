@@ -8,10 +8,11 @@ import com.ecogrid.mapper.model.AreaProtegida;
 import com.ecogrid.mapper.model.Subestacao;
 import com.ecogrid.mapper.model.transmissao.LinhaDeTransmissao;
 import com.ecogrid.mapper.service.*;
-
+import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 
+@Service
 public class GrafoFacade {
     private final LeitorCsvService leitorCsvService;
     private final LeitorShapefileService leitorShapefileService;

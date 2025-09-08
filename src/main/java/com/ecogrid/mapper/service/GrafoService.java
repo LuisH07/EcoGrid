@@ -5,8 +5,10 @@ import com.ecogrid.mapper.model.Subestacao;
 import com.ecogrid.mapper.util.FormatadorUtil;
 import lombok.Getter;
 import org.locationtech.jts.geom.Point;
+import org.springframework.stereotype.Service;
 import java.util.*;
 
+@Service
 public class GrafoService {
     @Getter
     private final Map<Subestacao, List<LinhaDeTransmissao>> grafo = new HashMap<>();

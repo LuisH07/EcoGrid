@@ -6,6 +6,6 @@ public class EcogridMapperApplicationTests {
 
 	@Test
     public void contextLoads() {
-	}
+    }
 
 }

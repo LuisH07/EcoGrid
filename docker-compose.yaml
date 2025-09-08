@@ -1,0 +1,16 @@
+version: '3.9'
+
+services:
+  ecogrid-backend:
+    build: .
+    image: ecogrid-mapper
+    ports:
+      - "8080:8080"
+    networks:
+      - ecogrid-net
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+
+networks:
+  ecogrid-net:
+    driver: bridge

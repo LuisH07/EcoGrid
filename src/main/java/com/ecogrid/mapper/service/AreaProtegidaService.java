@@ -6,9 +6,11 @@ import lombok.Getter;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LineString;
+import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 
+@Service
 public class AreaProtegidaService {
     @Getter
     private final List<AreaProtegida> areasProtegidas = new ArrayList<>();

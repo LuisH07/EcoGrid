@@ -1,12 +1,17 @@
 package com.ecogrid.mapper;
 
 import com.ecogrid.mapper.facade.GrafoFacade;
-import com.ecogrid.mapper.ui.MenuPrincipal;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.ApplicationContext;
 
+@SpringBootApplication
 public class EcogridMapperApplication {
 
     public static void main(String[] args) {
-        GrafoFacade grafoFacade = new GrafoFacade();
+        ApplicationContext context = SpringApplication.run(EcogridMapperApplication.class, args);
+
+        GrafoFacade grafoFacade = context.getBean(GrafoFacade.class);
 
         String caminhoSubestacoes = "src/main/resources/data/subestacoes.csv";
         String caminhoLinhasDeTransmissao = "src/main/resources/data/linhas-de-transmissao.csv";
@@ -14,7 +19,7 @@ public class EcogridMapperApplication {
 
         grafoFacade.carregarGrafo(caminhoSubestacoes, caminhoLinhasDeTransmissao, caminhoAreasProtegidas);
 
-        MenuPrincipal menuPrincipal = new MenuPrincipal(grafoFacade);
-        menuPrincipal.iniciar();
+        System.out.println("Grafo carregado no startup!");
     }
+
 }
