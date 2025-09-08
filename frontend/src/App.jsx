@@ -10,29 +10,30 @@ const converterSubestacaoBackendParaFrontend = (subestacaoBackend) => {
   return {
     id: subestacaoBackend.idInstalacao,
     nome: subestacaoBackend.nome,
-    lat: subestacaoBackend.coordenadas.y,
-    lon: subestacaoBackend.coordenadas.x,
+    lat: subestacaoBackend.latitude,
+    lon: subestacaoBackend.longitude,
     dadosCompletos: subestacaoBackend,
   };
 };
 
 const converterLinhaBackendParaFrontend = (linhaBackend, subestacoesMap) => {
-  const subA = subestacoesMap[linhaBackend.subestacaoA?.idInstalacao];
-  const subB = subestacoesMap[linhaBackend.subestacaoB?.idInstalacao];
+  // Encontrar subestações pelo ID
+  const subA = subestacoesMap[linhaBackend.subestacaoAId];
+  const subB = subestacoesMap[linhaBackend.subestacaoBId];
 
   return {
-    id: linhaBackend.informacoesAdministrativas.idInstalacao,
+    id: linhaBackend.idEquipamento,
     subA: subA || {
-      id: linhaBackend.subestacaoA?.idInstalacao || "unknown",
-      nome: linhaBackend.subestacaoA?.nome || "Origem Desconhecida",
-      lat: linhaBackend.subestacaoA?.coordenadas?.y || 0,
-      lon: linhaBackend.subestacaoA?.coordenadas?.x || 0,
+      id: linhaBackend.subestacaoAId || "unknown",
+      nome: linhaBackend.subestacaoANome || "Origem Desconhecida",
+      lat: subA?.lat || 0,
+      lon: subA?.lon || 0,
     },
     subB: subB || {
-      id: linhaBackend.subestacaoB?.idInstalacao || "unknown",
-      nome: linhaBackend.subestacaoB?.nome || "Destino Desconhecida",
-      lat: linhaBackend.subestacaoB?.coordenadas?.y || 0,
-      lon: linhaBackend.subestacaoB?.coordenadas?.x || 0,
+      id: linhaBackend.subestacaoBId || "unknown",
+      nome: linhaBackend.subestacaoBNome || "Destino Desconhecida",
+      lat: subB?.lat || 0,
+      lon: subB?.lon || 0,
     },
     cor: linhaBackend.sensivel ? "red" : "blue",
     tensao: `${linhaBackend.tensaoKv} kV`,
@@ -42,10 +43,10 @@ const converterLinhaBackendParaFrontend = (linhaBackend, subestacoesMap) => {
 };
 
 const converterAreaProtegidaBackendParaFrontend = (areaBackend) => {
-  //coordenadas geoJSON [lon, lat] para leaflet [lat, lon]
-  const coordsConvertidas = areaBackend.geometria.coordinates[0].map(
-    (coord) => [coord[1], coord[0]]
-  );
+  const coordsConvertidas = areaBackend.coordenadas.map((coord) => [
+    coord[1],
+    coord[0],
+  ]);
 
   return {
     id: areaBackend.nome.replace(/\s+/g, "-").toLowerCase(),
@@ -57,6 +58,7 @@ const converterAreaProtegidaBackendParaFrontend = (areaBackend) => {
   };
 };
 
+/*
 const subestacoesTeste = [
   {
     idInstalacao: "INST-12345",
@@ -273,7 +275,7 @@ const areasTeste = [
     },
   },
   {
-    nome: "Reserva Biológica de Pedra Talhada",
+    nome: "Reserva Biológica de teste testando",
     unidadeFederativaNordeste: "AL",
     medidaArea: 45.67,
     geometria: {
@@ -324,6 +326,7 @@ const areasTeste = [
     },
   },
 ];
+*/
 
 function App() {
   const [subestacoes, setSubestacoes] = useState([]);
@@ -440,104 +443,150 @@ function App() {
     }
   }, [subestacaoSelecionada, linhaSelecionada]);
 
-  /*
   useEffect(() => {
     const carregarDados = async () => {
       try {
         setCarregando(true);
         setErro(null);
 
-        //carregar subestações
-        const responseSub = await fetch(
-          "link das subestações"
-        );
-        const subestacoesBackend = await responseSub.json();
+        try {
+          //carregar subestações
+          const responseSub = await fetch("http://localhost:8080/api/v1/subestacoes");
 
-        //carregar linhas de transmissão
-        const responseLinhas = await fetch(
-          "link das linhas"
-        );
-        const linhasBackend = await responseLinhas.json();
+          if (!responseSub.ok) throw new Error("Erro ao carregar subestações");
+          const subestacoesBackend = await responseSub.json();
 
-        //carregar áreas protegidas
-        const responseAreas = await fetch(
-          "link das areas protegidas"
-        );
-        const areasBackend = await responseAreas.json();
+          //carregar linhas de transmissão
+          const responseLinhas = await fetch("http://localhost:8080/api/v1/linhasDeTransmissao");
 
-        const subestacoesConvertidas = subestacoesBackend.map(
-          converterSubestacaoBackendParaFrontend
-        );
+          if (!responseLinhas.ok) throw new Error("Erro ao carregar linhas");
+          const linhasBackend = await responseLinhas.json();
 
-        const subestacoesMap = {};
-        subestacoesConvertidas.forEach((sub) => {
-          subestacoesMap[sub.id] = sub;
-        });
+          //carregar áreas protegidas
+          const responseAreas = await fetch("http://localhost:8080/api/v1/areasProtegidas");
 
-        const linhasConvertidas = linhasBackend.map((linha) =>
-          converterLinhaBackendParaFrontend(linha, subestacoesMap)
-        );
+          if (!responseAreas.ok)
+            throw new Error("Erro ao carregar áreas protegidas");
+          const areasBackend = await responseAreas.json();
 
-        const areasConvertidas = areasBackend.map(
-          converterAreaProtegidaBackendParaFrontend
-        );
+          //converter dados
+          const subestacoesConvertidas = subestacoesBackend.map(
+            converterSubestacaoBackendParaFrontend
+          );
 
-        setSubestacoes(subestacoesConvertidas);
-        setLinhasTransmissao(linhasConvertidas);
-        setAreasProtegidas(areasConvertidas);
+          const subestacoesMap = {};
+          subestacoesConvertidas.forEach((sub) => {
+            subestacoesMap[sub.id] = sub;
+          });
+
+          const linhasConvertidas = linhasBackend.map((linha) =>
+            converterLinhaBackendParaFrontend(linha, subestacoesMap)
+          );
+
+          const areasConvertidas = areasBackend.map(
+            converterAreaProtegidaBackendParaFrontend
+          );
+
+          setSubestacoes(subestacoesConvertidas);
+          setLinhasTransmissao(linhasConvertidas);
+          setAreasProtegidas(areasConvertidas);
+        } catch (error) {
+          console.warn(
+            "Erro ao conectar com backend, usando dados de teste:",
+            error
+          );
+          //fallback
+          await carregarDadosTeste();
+        }
       } catch (error) {
         console.error("Erro ao carregar dados:", error);
-        setErro("Erro ao carregar dados do servidor");
+        setErro("Erro ao carregar dados. " + error.message);
       } finally {
         setCarregando(false);
       }
+    };
+
+    const carregarDadosTeste = async () => {
+      //dados de teste para subestações
+      const subestacoesTeste = [
+        {
+          idInstalacao: "INST-12345",
+          nome: "Subestação Fortaleza",
+          unidadeFederativaNordeste: "CE",
+          idAgentePrincipal: "AG-987",
+          agentePrincipal: "Companhia Energetica do Ceara",
+          dataPrevista: "2025-12-15",
+          dataEntrada: "2026-01-10",
+          latitude: -3.7172,
+          longitude: -38.5433,
+        },
+        {
+          idInstalacao: "INST-67890",
+          nome: "Subestação Recife",
+          unidadeFederativaNordeste: "PE",
+          idAgentePrincipal: "AG-654",
+          agentePrincipal: "Companhia Energetica de Pernambuco",
+          dataPrevista: "2025-11-20",
+          dataEntrada: "2026-02-15",
+          latitude: -8.0539,
+          longitude: -34.8811,
+        },
+      ];
+
+      //dados de teste para linhas
+      const linhasTeste = [
+        {
+          subestacaoAId: "INST-67890",
+          subestacaoANome: "Subestação Recife",
+          subestacaoBId: "INST-12345",
+          subestacaoBNome: "Subestação Fortaleza",
+          idEquipamento: "LT123",
+          nomeEquipamento: "Linha 500kV Recife-Fortaleza",
+          comprimentoKm: 350.8,
+          tensaoKv: 500.0,
+          sensivel: true,
+        },
+      ];
+
+      //dados de teste para áreas protegidas
+      const areasTeste = [
+        {
+          nome: "Parque Nacional do Sertão",
+          unidadeFederativaNordeste: "PE",
+          medidaArea: 12345.67,
+          coordenadas: [
+            [-8.12345, -35.12345],
+            [-8.1235, -35.1235],
+            [-8.12355, -35.12355],
+            [-8.12345, -35.12345],
+          ],
+        },
+      ];
+
+      //converter dados de teste
+      const subestacoesConvertidas = subestacoesTeste.map(
+        converterSubestacaoBackendParaFrontend
+      );
+
+      const subestacoesMap = {};
+      subestacoesConvertidas.forEach((sub) => {
+        subestacoesMap[sub.id] = sub;
+      });
+
+      const linhasConvertidas = linhasTeste.map((linha) =>
+        converterLinhaBackendParaFrontend(linha, subestacoesMap)
+      );
+
+      const areasConvertidas = areasTeste.map(
+        converterAreaProtegidaBackendParaFrontend
+      );
+
+      setSubestacoes(subestacoesConvertidas);
+      setLinhasTransmissao(linhasConvertidas);
+      setAreasProtegidas(areasConvertidas);
     };
 
     carregarDados();
-  }, []);
-  */
-  
-  useEffect(() => {
-    const carregarDadosTeste = async () => {
-      try {
-        setCarregando(true);
-
-        //simular delay de carregamento
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-
-        //converter subestações de teste
-        const subestacoesConvertidas = subestacoesTeste.map(
-          converterSubestacaoBackendParaFrontend
-        );
-
-        //criar mapa de subestações
-        const subestacoesMap = {};
-        subestacoesConvertidas.forEach((sub) => {
-          subestacoesMap[sub.id] = sub;
-        });
-
-        //converter linhas de teste
-        const linhasConvertidas = linhasTeste.map((linha) =>
-          converterLinhaBackendParaFrontend(linha, subestacoesMap)
-        );
-
-        //converter áreas protegidas de teste
-        const areasConvertidas = areasTeste.map(
-          converterAreaProtegidaBackendParaFrontend
-        );
-
-        setSubestacoes(subestacoesConvertidas);
-        setLinhasTransmissao(linhasConvertidas);
-        setAreasProtegidas(areasConvertidas);
-      } catch (error) {
-        console.error("Erro ao carregar dados de teste:", error);
-        setErro("Erro ao carregar dados");
-      } finally {
-        setCarregando(false);
-      }
-    };
-
-    carregarDadosTeste();
   }, []);
 
   if (carregando) {

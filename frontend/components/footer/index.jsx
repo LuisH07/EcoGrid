@@ -8,11 +8,18 @@ export default function Footer() {
         <div className="text-wrapper">
           <p>&copy; 2025, Criado por:</p>
           <div className="name-wrapper">
-            <p>Raphael Augusto Paulino Leite,  Arthur Roberto Araújo Tavares  e  Luís Henrique Domingos da Silva</p>
+            <p>
+              Raphael Augusto Paulino Leite, Arthur Roberto Araújo Tavares e
+              Luís Henrique Domingos da Silva
+            </p>
           </div>
         </div>
         <div className="git-wrapper">
-          <a href="https://github.com/LuisH07/EcoGrid.git">
+          <a
+            href="https://github.com/LuisH07/EcoGrid.git"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             <FaGithub className="git-icon" />
             <p>Repositório Github</p>
           </a>
