@@ -2,7 +2,7 @@ version: '3.9'
 
 services:
   ecogrid-backend:
-    build: .
+    build: ./back
     image: ecogrid-mapper
     ports:
       - "8080:8080"
@@ -10,6 +10,18 @@ services:
       - ecogrid-net
     environment:
       SPRING_PROFILES_ACTIVE: docker
+
+  ecogrid-frontend:
+    build: ./frontend
+    image: ecogrid-frontend
+    ports:
+      - "3000:80"
+    volumes:
+      - ./front/src:/app/src
+    networks:
+      - ecogrid-net
+    depends_on:
+      - ecogrid-backend
 
 networks:
   ecogrid-net:

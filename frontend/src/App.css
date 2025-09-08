@@ -1,0 +1,16 @@
+.main-wrapper {
+  display: flex;
+  width: 100%;
+  margin: 0 auto;
+  flex: 1;
+  min-height: calc(100vh - 160px);
+}
+
+.carregando {
+  width: 100%;
+  min-height: calc(100vh - 183px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}

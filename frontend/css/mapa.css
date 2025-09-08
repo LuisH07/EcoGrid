@@ -1,0 +1,36 @@
+.mapa-container {
+  flex: 1;
+  height: calc(100vh - 115px);
+  position: relative;
+}
+
+.mapa {
+  height: 100%;
+  width: 100%;
+}
+
+.leaflet-popup-content-wrapper {
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.leaflet-popup-content {
+  margin: 15px;
+  line-height: 1.4;
+}
+
+.leaflet-popup-content h3 {
+  margin: 0 0 0.5rem 0;
+  color: #2c3e50;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.leaflet-popup-content p {
+  margin: 0.3rem 0;
+  color: #34495e;
+}
+
+.leaflet-popup-tip {
+  background: white;
+}
