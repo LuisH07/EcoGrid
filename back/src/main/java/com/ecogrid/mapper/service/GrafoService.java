@@ -11,6 +11,8 @@ import java.util.*;
 
 @Service
 public class GrafoService {
+    private int tempoGlobal;
+
     @Getter
     private final Map<Subestacao, List<LinhaDeTransmissao>> grafo = new HashMap<>();
 
@@ -290,7 +292,7 @@ public class GrafoService {
         Map<Subestacao, Integer> discovery = new HashMap<>();
         Map<Subestacao, Integer> low = new HashMap<>();
         Map<Subestacao, Subestacao> pais = new HashMap<>();
-        int tempo = 0;
+        tempoGlobal = 0;
 
         for (Subestacao sub : grafo.keySet()) {
             visitados.put(sub, false);
@@ -299,30 +301,29 @@ public class GrafoService {
 
         for (Subestacao sub : grafo.keySet()) {
             if (!visitados.get(sub)) {
-                dfsSubestacoesCriticas(sub, visitados, discovery, low, pais, nosCriticos, tempo);
+                dfsSubestacoesCriticas(sub, visitados, discovery, low, pais, nosCriticos);
             }
         }
 
         return nosCriticos;
-
     }
 
     private void dfsSubestacoesCriticas(Subestacao u, Map<Subestacao, Boolean> visitados,
-                                Map<Subestacao, Integer> discovery, Map<Subestacao, Integer> low,
-                                Map<Subestacao, Subestacao> pais, Set<Subestacao> articulationPoints,
-                                int tempo) {
+                                        Map<Subestacao, Integer> discovery, Map<Subestacao, Integer> low,
+                                        Map<Subestacao, Subestacao> pais, Set<Subestacao> articulationPoints) {
         visitados.put(u, true);
-        discovery.put(u, tempo);
-        low.put(u, tempo);
+        discovery.put(u, tempoGlobal);
+        low.put(u, tempoGlobal);
+        tempoGlobal++;
+
         int filhos = 0;
-        tempo++;
 
         for (LinhaDeTransmissao linha : grafo.getOrDefault(u, Collections.emptyList())) {
             Subestacao v = findVizinho(u, linha);
             if (!visitados.get(v)) {
                 filhos++;
                 pais.put(v, u);
-                dfsSubestacoesCriticas(v, visitados, discovery, low, pais, articulationPoints, tempo);
+                dfsSubestacoesCriticas(v, visitados, discovery, low, pais, articulationPoints);
 
                 low.put(u, Math.min(low.get(u), low.get(v)));
 
@@ -344,7 +345,7 @@ public class GrafoService {
         Map<Subestacao, Integer> discovery = new HashMap<>();
         Map<Subestacao, Integer> low = new HashMap<>();
         Map<Subestacao, Subestacao> pais = new HashMap<>();
-        int tempo = 0;
+        tempoGlobal = 0; // inicializa antes do DFS
 
         for (Subestacao sub : grafo.keySet()) {
             visitados.put(sub, false);
@@ -353,7 +354,7 @@ public class GrafoService {
 
         for (Subestacao sub : grafo.keySet()) {
             if (!visitados.get(sub)) {
-                dfsArestasCriticas(sub, visitados, discovery, low, pais, arestasCriticas, tempo);
+                dfsArestasCriticas(sub, visitados, discovery, low, pais, arestasCriticas);
             }
         }
 
@@ -362,18 +363,17 @@ public class GrafoService {
 
     private void dfsArestasCriticas(Subestacao u, Map<Subestacao, Boolean> visitados,
                                     Map<Subestacao, Integer> discovery, Map<Subestacao, Integer> low,
-                                    Map<Subestacao, Subestacao> pais, List<LinhaDeTransmissao> bridges,
-                                    int tempo) {
+                                    Map<Subestacao, Subestacao> pais, List<LinhaDeTransmissao> bridges) {
         visitados.put(u, true);
-        discovery.put(u, tempo);
-        low.put(u, tempo);
-        tempo++;
+        discovery.put(u, tempoGlobal);
+        low.put(u, tempoGlobal);
+        tempoGlobal++;
 
         for (LinhaDeTransmissao linha : grafo.getOrDefault(u, Collections.emptyList())) {
             Subestacao v = findVizinho(u, linha);
             if (!visitados.get(v)) {
                 pais.put(v, u);
-                dfsArestasCriticas(v, visitados, discovery, low, pais, bridges, tempo);
+                dfsArestasCriticas(v, visitados, discovery, low, pais, bridges);
 
                 low.put(u, Math.min(low.get(u), low.get(v)));
 
@@ -385,5 +385,4 @@ public class GrafoService {
             }
         }
     }
-
 }
