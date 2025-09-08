@@ -381,7 +381,7 @@ export default function MenuLateral({
                   </p>
                   <ul style={{ paddingLeft: "20px", marginTop: "5px" }}>
                     {linhasTransmissaoCriticas.map((linha) => (
-                      <li key={linha.id} style={{color: "black"}}>
+                      <li key={linha.id} style={{color: "black", marginBottom: "5px"}}>
                         {linha.nome || `Linha ${linha.id}`} -{linha.subA.nome} →{" "}
                         {linha.subB.nome}
                       </li>
