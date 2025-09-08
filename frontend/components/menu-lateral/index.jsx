@@ -127,7 +127,7 @@ export default function MenuLateral({
       {modoVisualizacaoRota ? (
         <div className="modo-rota-controles">
           <div className="info-rotas">
-            <h3>Rota Gerada</h3>
+            <h3 style={{color: "black"}}>Rota Gerada</h3>
 
             <div className="estatistica-rota">
               <h4>Informações da Rota</h4>
