@@ -286,4 +286,13 @@ public class GrafoService {
             }
         }
     }
+
+    public Map<Subestacao, Integer> calcularCentralidade() {
+        Map<Subestacao, Integer> centralidade = new HashMap<>();
+        for (Map.Entry<Subestacao, List<LinhaDeTransmissao>> entry : grafo.entrySet()) {
+            centralidade.put(entry.getKey(), entry.getValue().size());
+        }
+        return centralidade;
+    }
+
 }

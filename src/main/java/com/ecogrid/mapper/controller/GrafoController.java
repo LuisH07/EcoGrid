@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1/")
@@ -30,6 +32,18 @@ public class GrafoController {
     @GetMapping("linhasDeTransmissao")
     public List<LinhaDeTransmissao> getAllLinhasDeTranmissao() {
         return grafoFacade.findAllLinhasDeTranmissao();
+    }
+
+    @GetMapping("centralidade")
+    public Map<String, Integer> getCentralidade() {
+        return grafoFacade.analisarCentralidade()
+                .entrySet()
+                .stream()
+                .collect(Collectors.toMap(
+                        entry -> entry.getKey().getNome(),
+                        Map.Entry::getValue,
+                        Integer::sum // soma em caso de duplicata
+                ));
     }
 
 }
