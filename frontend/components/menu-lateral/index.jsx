@@ -44,7 +44,8 @@ export default function MenuLateral({
       if (
         linha.subA.nome.toLowerCase().includes(termo) ||
         linha.subB.nome.toLowerCase().includes(termo) ||
-        linha.tensao.toLowerCase().includes(termo)
+        linha.tensao.toLowerCase().includes(termo) ||
+        linha.dadosCompletos.nomeEquipamento?.toLowerCase().includes(termo)
       ) {
         sugestoesFiltradas.push({
           tipo: "linha",
@@ -133,6 +134,26 @@ export default function MenuLateral({
                 {subestacaoSelecionada.lat.toFixed(4)},{" "}
                 {subestacaoSelecionada.lon.toFixed(4)}
               </p>
+              {subestacaoSelecionada.dadosCompletos && (
+                <>
+                  <p>
+                    <strong>UF:</strong>{" "}
+                    {subestacaoSelecionada.dadosCompletos.unidadeFederativaNordeste}
+                  </p>
+                  <p>
+                    <strong>Agente:</strong>{" "}
+                    {subestacaoSelecionada.dadosCompletos.agentePrincipal}
+                  </p>
+                  <p>
+                    <strong>Data Prevista:</strong>{" "}
+                    {subestacaoSelecionada.dadosCompletos.dataPrevista}
+                  </p>
+                  <p>
+                    <strong>Data Entrada:</strong>{" "}
+                    {subestacaoSelecionada.dadosCompletos.dataEntrada}
+                  </p>
+                </>
+              )}
             </div>
           ) : (
             <p className="dado-selecionado">Nenhuma subestação selecionada</p>
@@ -145,10 +166,7 @@ export default function MenuLateral({
             <div className="dado-selecionado">
               <p>
                 <strong>Nome:</strong>{" "}
-                {
-                  linhaSelecionada.dadosCompletos.informacoesAdministrativas
-                    .nome
-                }
+                {linhaSelecionada.dadosCompletos.nomeEquipamento || "Linha de Transmissão"}
               </p>
               <p>
                 <strong>De:</strong> {linhaSelecionada.subA.nome}
@@ -168,6 +186,18 @@ export default function MenuLateral({
                   ? "Sensível"
                   : "Normal"}
               </p>
+              {linhaSelecionada.dadosCompletos.informacoesAdministrativas && (
+                <>
+                  <p>
+                    <strong>Agente:</strong>{" "}
+                    {linhaSelecionada.dadosCompletos.informacoesAdministrativas.agenteProprietario}
+                  </p>
+                  <p>
+                    <strong>Outorga:</strong>{" "}
+                    {linhaSelecionada.dadosCompletos.informacoesAdministrativas.numeroOutorga}
+                  </p>
+                </>
+              )}
             </div>
           ) : (
             <p className="dado-selecionado">Nenhuma linha selecionada</p>

@@ -22,7 +22,7 @@ L.Icon.Default.mergeOptions({
   iconAnchor: [10, 32.8],
   popupAnchor: [0, -32.8]  
 });
-//iconSize: [20, 32.8]
+
 function ZoomController({ elementoParaZoom }) {
   const map = useMap();
   const lastElementId = useRef(null);
@@ -210,7 +210,13 @@ export default function Mapa({
           >
             <Popup>
               <div>
-                <h3>{linha.dadosCompletos.informacoesAdministrativas.nome}</h3>
+                <h3>{linha.dadosCompletos.nomeEquipamento || "Linha de Transmissão"}</h3>
+                <p>
+                  <strong>De:</strong> {linha.subA.nome}
+                </p>
+                <p>
+                  <strong>Para:</strong> {linha.subB.nome}
+                </p>
                 <p>
                   <strong>Tensão:</strong> {linha.tensao}
                 </p>
@@ -221,28 +227,26 @@ export default function Mapa({
                   <strong>Status:</strong>{" "}
                   {linha.dadosCompletos.sensivel ? "Sensível" : "Normal"}
                 </p>
-                <p>
-                  <strong>Agente:</strong>{" "}
-                  {
-                    linha.dadosCompletos.informacoesAdministrativas
-                      .agenteProprietario
-                  }
-                </p>
-                <p>
-                  <strong>Outorga:</strong>{" "}
-                  {
-                    linha.dadosCompletos.informacoesAdministrativas
-                      .numeroOutorga
-                  }
-                </p>
-                <p>
-                  <strong>Data Prevista:</strong>{" "}
-                  {linha.dadosCompletos.informacoesAdministrativas.dataPrevista}
-                </p>
-                <p>
-                  <strong>Data Entrada:</strong>{" "}
-                  {linha.dadosCompletos.informacoesAdministrativas.dataEntrada}
-                </p>
+                {linha.dadosCompletos.informacoesAdministrativas && (
+                  <>
+                    <p>
+                      <strong>Agente:</strong>{" "}
+                      {linha.dadosCompletos.informacoesAdministrativas.agenteProprietario}
+                    </p>
+                    <p>
+                      <strong>Outorga:</strong>{" "}
+                      {linha.dadosCompletos.informacoesAdministrativas.numeroOutorga}
+                    </p>
+                    <p>
+                      <strong>Data Prevista:</strong>{" "}
+                      {linha.dadosCompletos.informacoesAdministrativas.dataPrevista}
+                    </p>
+                    <p>
+                      <strong>Data Entrada:</strong>{" "}
+                      {linha.dadosCompletos.informacoesAdministrativas.dataEntrada}
+                    </p>
+                  </>
+                )}
               </div>
             </Popup>
           </Polyline>
